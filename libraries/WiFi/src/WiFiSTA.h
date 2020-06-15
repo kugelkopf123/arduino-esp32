@@ -36,8 +36,8 @@ class WiFiSTAClass
 
 public:
 
-    wl_status_t begin(const char* ssid, const char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL, bool connect = true);
-    wl_status_t begin(char* ssid, char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL, bool connect = true);
+    wl_status_t begin(const char* ssid, const char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL, bool connect = true, const uint16_t pmf_mode = 0);
+    wl_status_t begin(char* ssid, char *passphrase = NULL, int32_t channel = 0, const uint8_t* bssid = NULL, bool connect = true, const uint16_t pmf_mode = 0);
     wl_status_t begin();
 
     bool config(IPAddress local_ip, IPAddress gateway, IPAddress subnet, IPAddress dns1 = (uint32_t)0x00000000, IPAddress dns2 = (uint32_t)0x00000000);
@@ -68,7 +68,7 @@ public:
     IPAddress broadcastIP();
     IPAddress networkID();
     uint8_t subnetCIDR();
-    
+
     bool enableIpV6();
     IPv6Address localIPv6();
 

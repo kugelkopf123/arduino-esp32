@@ -112,7 +112,7 @@ wl_status_t WiFiSTAClass::status()
  * @param connect                   Optional. call connect
  * @return
  */
-wl_status_t WiFiSTAClass::begin(const char* ssid, const char *passphrase, int32_t channel, const uint8_t* bssid, bool connect)
+wl_status_t WiFiSTAClass::begin(const char* ssid, const char *passphrase, int32_t channel, const uint8_t* bssid, bool connect, const uint16_t pmf_mode)
 {
 
     if(!WiFi.enableSTA(true)) {
@@ -180,12 +180,34 @@ wl_status_t WiFiSTAClass::begin(const char* ssid, const char *passphrase, int32_
         return WL_CONNECT_FAILED;
     }
 
+    if(pmf_mode >= 0 && pmf_mode <= 2) {
+        switch(pmf_mode) {
+            case 0:
+                conf.sta.pmf_cfg.capable = 0;
+                conf.sta.pmf_cfg.required = 0;
+                log_d("pmf_mode 0!");
+            break;
+            case 1:
+                conf.sta.pmf_cfg.capable = 1;
+                conf.sta.pmf_cfg.required = 0;
+                log_d("pmf_mode 1!");
+            break;
+            case 2:
+                conf.sta.pmf_cfg.capable = 1;
+                conf.sta.pmf_cfg.required = 1;
+                log_d("pmf_mode 2!");
+            break;
+            default:
+                log_e("pmf_mode failed!");
+        }
+    }
+
     return status();
 }
 
-wl_status_t WiFiSTAClass::begin(char* ssid, char *passphrase, int32_t channel, const uint8_t* bssid, bool connect)
+wl_status_t WiFiSTAClass::begin(char* ssid, char *passphrase, int32_t channel, const uint8_t* bssid, bool connect, const uint16_t pmf_mode)
 {
-    return begin((const char*) ssid, (const char*) passphrase, channel, bssid, connect);
+    return begin((const char*) ssid, (const char*) passphrase, channel, bssid, connect, pmf_mode);
 }
 
 /**
@@ -424,7 +446,7 @@ IPAddress WiFiSTAClass::localIP()
 uint8_t* WiFiSTAClass::macAddress(uint8_t* mac)
 {
     if(WiFiGenericClass::getMode() != WIFI_MODE_NULL){
-        esp_wifi_get_mac(WIFI_IF_STA, mac);	
+        esp_wifi_get_mac(WIFI_IF_STA, mac);
     }
     else{
         esp_read_mac(mac, ESP_MAC_WIFI_STA);
