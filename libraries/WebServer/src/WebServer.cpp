@@ -313,11 +313,12 @@ void WebServer::handleClient() {
           _contentLength = CONTENT_LENGTH_NOT_SET;
           _handleRequest();
 
-          if (_currentClient.connected()) {
-            _currentStatus = HC_WAIT_CLOSE;
-            _statusChange = millis();
-            keepCurrentClient = true;
-          }
+// Fix for issue with Chrome based browsers: https://github.com/espressif/arduino-esp32/issues/3652
+//           if (_currentClient.connected()) {
+//             _currentStatus = HC_WAIT_CLOSE;
+//             _statusChange = millis();
+//             keepCurrentClient = true;
+//           }
         }
       } else { // !_currentClient.available()
         if (millis() - _statusChange <= HTTP_MAX_DATA_WAIT) {
@@ -463,20 +464,23 @@ void WebServer::send(int code, const String& content_type, const String& content
 }
 
 void WebServer::sendContent(const String& content) {
+  sendContent(content.c_str(), content.length());
+}
+
+void WebServer::sendContent(const char* content, size_t contentLength) {
   const char * footer = "\r\n";
-  size_t len = content.length();
   if(_chunked) {
     char * chunkSize = (char *)malloc(11);
     if(chunkSize){
-      sprintf(chunkSize, "%x%s", len, footer);
+      sprintf(chunkSize, "%x%s", contentLength, footer);
       _currentClientWrite(chunkSize, strlen(chunkSize));
       free(chunkSize);
     }
   }
-  _currentClientWrite(content.c_str(), len);
+  _currentClientWrite(content, contentLength);
   if(_chunked){
     _currentClient.write(footer, 2);
-    if (len == 0) {
+    if (contentLength == 0) {
       _chunked = false;
     }
   }
